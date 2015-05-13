@@ -1,0 +1,70 @@
+<h2>hi world</h2>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.8.0/lodash.min.js"></script>
+
+<script>
+    var amex = {}; //for namespace purposes & not polluting window object
+    amex.contentString = "The George Washington Bridge in New York City is one of the oldest bridges ever constructed. It is now being remodeled because the bridge is a landmark. City officials say that the landmark bridge effort will create a lot of new jobs in the city.";
+    amex.searchString = "Landmark City Bridge";
+
+    var foundWords = findSearchTerms(amex.contentString.split(" "),
+                    amex.searchString.split(" "));
+    getAllPossibleSnippetsBySearchTermOrder(foundWords, amex.searchString.split(" "))
+
+    function findSearchTerms(contentArr, searchTermArr) {
+        var foundWords = [];
+        $.each(contentArr, function(cIndex, contentWord){
+               $.each(searchTermArr, function(sIndex,searchTerm) {
+                    var re = new RegExp(searchTerm, "i")
+                    if(re.exec(contentWord))
+                      foundWords.push({cIndex: cIndex, searchTerm: searchTerm});
+                })
+       })
+       return foundWords;
+    }
+
+    // active search terms is determined by removing the searchTerm property on the foundWord from the searchTermArray and returning the resultant searchTermArray
+    function deriveActiveSearchTerms() {
+        
+    }
+
+
+    // why would searchTermArray EVER be 0?
+    function getAllPossibleSnippetsBySearchTermOrder(foundWords, searchTermArray){
+        var snippetList = [];
+        $.each(foundWords, function(index, foundWord){
+               var snippet = [];
+               // why would search term array EVER be zero. the value of active searchTerms is dependent on it (the entire algorithm is bassed off active searchTerms)
+               console.log(searchTermArray);
+               // var activeSearchTerms = _.remove(searchTermArray, function(word){return word !== foundWord.searchTerm});
+               var activeSearchTerms = deriveActiveSearchTerms(searchTermArray, foundWord)
+               console.log(searchTermArray);
+               snippet.push(foundWord);
+               // exhaust every possiblility for a combination of all N characters for this foundWord
+               for(var i = index + 1; i < foundWords.length; i++) {
+                   for(var j = 0; j < activeSearchTerms.length; j++) {
+                       if(foundWords[i].searchTerm === activeSearchTerms[j]) {
+                           activeSearchTerms = _.remove(activeSearchTerms, function(word){return word !== foundWords[i].searchTerm})
+                           snippet.push(foundWords[i])
+                       }
+                        // when the list of active search terms have been exhauseted
+                       if(activeSearchTerms.length < 1) {
+                            snippetList.push(snippet);
+                            return;
+                       }
+                   }
+               }
+        })
+         console.log(snippetList);
+         // result: an array of arrays
+         // the arrays are:
+         // [bridge, city, landmark] (3,7,26)
+         // [city, bridge] (7,13)
+         // theree must be an error somewhere as landmark only pops up once. it may be that the landmark. is missing
+         // regardless, there should
+    }
+
+    // create strings by index order
+    // get the shortest one
+</script>
+
