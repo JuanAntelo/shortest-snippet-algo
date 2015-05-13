@@ -7,9 +7,9 @@
     amex.contentString = "The George Washington Bridge in New York City is one of the oldest bridges ever constructed. It is now being remodeled because the bridge is a landmark. City officials say that the landmark bridge effort will create a lot of new jobs in the city.";
     amex.searchString = "Landmark City Bridge";
 
-    var foundWords = findSearchTerms(amex.contentString.split(" "),
-                    amex.searchString.split(" "));
-    getAllPossibleSnippetsBySearchTermOrder(foundWords, amex.searchString.split(" "))
+    var searchTerms = amex.searchString.split(" ")
+    var foundWords = findSearchTerms(amex.contentString.split(" "), searchTerms);
+    getAllPossibleSnippetsBySearchTermOrder(foundWords, searchTerms);
 
     function findSearchTerms(contentArr, searchTermArr) {
         var foundWords = [];
@@ -20,48 +20,42 @@
                       foundWords.push({cIndex: cIndex, searchTerm: searchTerm});
                 })
        })
-       return foundWords;
+       return foundWords; //TODO - make obj
     }
 
-    // active search terms is determined by removing the searchTerm property on the foundWord from the searchTermArray and returning the resultant searchTermArray
-    function deriveActiveSearchTerms() {
-        
-    }
-
-
-    // why would searchTermArray EVER be 0?
+    // Scan through the foundWords k/v store, 
+    // Exhaust every possiblility of snippets that contain all N words of the given searchTerms
     function getAllPossibleSnippetsBySearchTermOrder(foundWords, searchTermArray){
-        var snippetList = [];
-        $.each(foundWords, function(index, foundWord){
-               var snippet = [];
-               // why would search term array EVER be zero. the value of active searchTerms is dependent on it (the entire algorithm is bassed off active searchTerms)
-               console.log(searchTermArray);
-               // var activeSearchTerms = _.remove(searchTermArray, function(word){return word !== foundWord.searchTerm});
-               var activeSearchTerms = deriveActiveSearchTerms(searchTermArray, foundWord)
-               console.log(searchTermArray);
+        var snippetList = []; // A list of array objects that indicate a possible snippet to qualify for the algorithm //TODO - make obj
+        $.each(foundWords, function(index, foundWord) {
+        	   var snippet = []; // A snippet represents the possible combination of words that meet the problem sets condition //TODO- make obj
+        	   var tempSearchTermArray = _.clone(searchTermArray); // the value of searchTermArray gets reduced to 0 per iteration as a 
+								     // result of splicing it so save it to a temp var to reset it's value (see line 47)
+               
+               removeFoundSearchTerm(searchTermArray, foundWord)
                snippet.push(foundWord);
-               // exhaust every possiblility for a combination of all N characters for this foundWord
                for(var i = index + 1; i < foundWords.length; i++) {
-                   for(var j = 0; j < activeSearchTerms.length; j++) {
-                       if(foundWords[i].searchTerm === activeSearchTerms[j]) {
-                           activeSearchTerms = _.remove(activeSearchTerms, function(word){return word !== foundWords[i].searchTerm})
-                           snippet.push(foundWords[i])
+                   for(var j = 0; j < searchTermArray.length; j++) {
+                       if(foundWords[i].searchTerm === searchTermArray[j]) {
+                           removeFoundSearchTerm(searchTermArray, foundWords[i])     // i could refactor these two lines
+                           snippet.push(foundWords[i])					    // into one func as it's done twice
                        }
-                        // when the list of active search terms have been exhauseted
-                       if(activeSearchTerms.length < 1) {
-                            snippetList.push(snippet);
-                            return;
+                       if(searchTermArray.length < 1) {
+                            snippetList.push(snippet);					    // following the above this could be a func too 
                        }
                    }
                }
+               searchTermArray = _.clone(tempSearchTermArray);
         })
-         console.log(snippetList);
-         // result: an array of arrays
-         // the arrays are:
-         // [bridge, city, landmark] (3,7,26)
-         // [city, bridge] (7,13)
-         // theree must be an error somewhere as landmark only pops up once. it may be that the landmark. is missing
-         // regardless, there should
+         console.log(snippetList); // i get a reasonable value here
+    }
+
+    function removeFoundSearchTerm(searchTermArray, foundWord) {
+        $.each(searchTermArray,function(index,searchTerm){
+        	if(searchTerm === foundWord.searchTerm) {
+        		searchTermArray.splice(index, 1);
+        	}
+        } )
     }
 
     // create strings by index order
