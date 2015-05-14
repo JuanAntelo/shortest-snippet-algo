@@ -1,19 +1,79 @@
-<h2>hi world whatever yo</h2>
+<h2>Shortest Snippet Algorithm</h2>
+<h3>Content input:     <span data-bind="text: contentInput"></span></h3>
+<h3>Search Terms:      <span data-bind="text: searchTerms"></span></h3>
+<h3>Shortest Snippet: <span data-bind="text: answer"></span></h3>
+
 <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.8.0/lodash.min.js"></script>
-
+<script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.3.0/knockout-min.js"></script>
 <script>
-// NOTE - does not include the case where the search string does not exist within the content string 
-    var amex = {}; //for namespace purposes & not polluting window object
+    var amex = {};
     amex.contentString = "The George Washington Bridge in New York City is one of the oldest bridges ever constructed. It is now being remodeled because the bridge is a landmark. City officials say that the landmark bridge effort will create a lot of new jobs in the city.";
     amex.searchString = "Landmark City Bridge";
 
     var searchTerms = amex.searchString.split(" ")
     var contentStringArr = amex.contentString.split(" ")
+    
     var foundWords = findSearchTerms(contentStringArr, searchTerms);
     var snippetLocList = getAllPossibleSnippetsBySearchTermOrder(foundWords, searchTerms);
-    var snippetList = createSnippetsFromWordTerms(snippetLocList, contentStringArr); 
+    var snippetList = createSnippetsFromSearchTermLoc(snippetLocList, contentStringArr); 
     var answer = getShortestSnippet(snippetList);
+
+    var viewModel = {
+    	answer: answer,
+    	contentInput: amex.contentString,
+    	searchTerms: amex.searchString
+    }
+
+    ko.applyBindings(viewModel);
+    
+    // Returns an array of objects that hold the index where a searchTerm is found and its corresponding searchTerm
+    function findSearchTerms(contentArr, searchTermArr) {
+        var foundWords = [];
+        $.each(contentArr, function(cIndex, contentWord){
+               $.each(searchTermArr, function(sIndex,searchTerm) {
+                    var re = new RegExp(searchTerm, "i")
+                    if(re.exec(contentWord))
+                      foundWords.push({cIndex: cIndex, searchTerm: searchTerm});
+                })
+       })
+       return foundWords;
+    }
+
+    // Returns an array of arrays that contain every possiblility of snippets that contain all N words of the given searchTerms
+    function getAllPossibleSnippetsBySearchTermOrder(foundWords, searchTermArray){
+        var snippetLocList = []; 
+        $.each(foundWords, function(index, foundWord) {
+        	   var snippet = []; 
+        	   var tempSearchTermArray = _.clone(searchTermArray); // the value of searchTermArray gets reduced to 0 per iteration as a 
+								     // result of splicing it so save it to a temp var to reset it's value
+               removeFoundSearchTerm(searchTermArray, foundWord)
+               snippet.push(foundWord);
+               for(var i = index + 1; i < foundWords.length; i++) {
+                   for(var j = 0; j < searchTermArray.length; j++) {
+                       if(foundWords[i].searchTerm === searchTermArray[j]) {
+                           removeFoundSearchTerm(searchTermArray, foundWords[i])    
+                           snippet.push(foundWords[i])					    
+                       }
+                       if(searchTermArray.length < 1) {
+                            snippetLocList.push(snippet);				
+                       }
+                   }
+               }
+               searchTermArray = _.clone(tempSearchTermArray);
+        })
+         return snippetLocList; 
+    }
+
+    function createSnippetsFromSearchTermLoc(snippetLocList, contentStringArr) {
+    	var snippetList = [];
+    	$.each(snippetLocList, function(index, snippetLoc){
+    		// +1 at the end b/c splice does not include the end element
+    		var snippetArr = _.slice(contentStringArr, snippetLoc[0].cIndex, snippetLoc[snippetLoc.length-1].cIndex + 1); 
+    		snippetList.push(snippetArr);
+    	})
+    	return snippetList;
+    }
 
     function getShortestSnippet(snippetList) {
     	var currShortest = snippetList[0];
@@ -24,54 +84,6 @@
     	return currShortest.join(" ");
     }
 
-    function createSnippetsFromWordTerms(snippetLocList, contentStringArr) {
-    	var snippetList = [];
-    	$.each(snippetLocList, function(index, snippetLoc){
-    		var snippetArr = _.slice(contentStringArr, snippetLoc[0].cIndex, snippetLoc[snippetLoc.length-1].cIndex + 1); 
-    		snippetList.push(snippetArr);
-    	})
-    	return snippetList;
-    }
-
-
-    function findSearchTerms(contentArr, searchTermArr) {
-        var foundWords = [];
-        $.each(contentArr, function(cIndex, contentWord){
-               $.each(searchTermArr, function(sIndex,searchTerm) {
-                    var re = new RegExp(searchTerm, "i")
-                    if(re.exec(contentWord))
-                      foundWords.push({cIndex: cIndex, searchTerm: searchTerm});
-                })
-       })
-       return foundWords; //TODO - make obj
-    }
-
-    // Scan through the foundWords k/v store, 
-    // Exhaust every possiblility of snippets that contain all N words of the given searchTerms
-    function getAllPossibleSnippetsBySearchTermOrder(foundWords, searchTermArray){
-        var snippetLocList = []; // A list of array objects that indicate a possible snippet to qualify for the algorithm //TODO - make obj
-        $.each(foundWords, function(index, foundWord) {
-        	   var snippet = []; // A snippet represents the possible combination of words that meet the problem sets condition //TODO- make obj
-        	   var tempSearchTermArray = _.clone(searchTermArray); // the value of searchTermArray gets reduced to 0 per iteration as a 
-								     // result of splicing it so save it to a temp var to reset it's value (see line 47)
-               removeFoundSearchTerm(searchTermArray, foundWord)
-               snippet.push(foundWord);
-               for(var i = index + 1; i < foundWords.length; i++) {
-                   for(var j = 0; j < searchTermArray.length; j++) {
-                       if(foundWords[i].searchTerm === searchTermArray[j]) {
-                           removeFoundSearchTerm(searchTermArray, foundWords[i])     // i could refactor these two lines
-                           snippet.push(foundWords[i])					    // into one func as it's done twice
-                       }
-                       if(searchTermArray.length < 1) {
-                            snippetLocList.push(snippet);					    // following the above this could be a func too 
-                       }
-                   }
-               }
-               searchTermArray = _.clone(tempSearchTermArray);
-        })
-         return snippetLocList; 
-    }
-
     function removeFoundSearchTerm(searchTermArray, foundWord) {
         $.each(searchTermArray,function(index,searchTerm){
         	if(searchTerm === foundWord.searchTerm) {
@@ -79,8 +91,4 @@
         	}
         } )
     }
-
-    // create strings by index order
-    // get the shortest one
 </script>
-
