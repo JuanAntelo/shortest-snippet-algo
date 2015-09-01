@@ -9,8 +9,11 @@ Given the following content -The George Washington Bridge in New York City is on
 
 And the following search phrase - Landmark City Bridge
 
-The shortest snippet in this case is - bridge is a landmark. City
+As determined by my algorithm, the shortest snippet in this case is - bridge is a landmark. City
 
 External libraries used - KnockoutJS / jQUery / Lodash
 
-The focus of this is solving the algorithm itself rather than any UI
+The focus of this is solving the algorithm itself rather than any UI aesthetics. 
+
+See it at work here,
+http://htmlpreview.github.io/?https://github.com/JuanAntelo/shortest-snippet-algo/blob/master/shortestSnippet.html
