@@ -13,8 +13,8 @@
     algo.contentString = "The George Washington Bridge in New York City is one of the oldest bridges ever constructed. It is now being remodeled because the bridge is a landmark. City officials say that the landmark bridge effort will create a lot of new jobs in the city.";
     algo.searchString = "Landmark City Bridge";
 
-    var searchTerms = amex.searchString.split(" ")
-    var contentStringArr = amex.contentString.split(" ")
+    var searchTerms = algo.searchString.split(" ")
+    var contentStringArr = algo.contentString.split(" ")
     
     var foundWords = findSearchTerms(contentStringArr, searchTerms);
     var snippetLocList = getAllPossibleSnippetsBySearchTermOrder(foundWords, searchTerms);
@@ -23,8 +23,8 @@
 
     var viewModel = {
     	answer: answer,
-    	contentInput: amex.contentString,
-    	searchTerms: amex.searchString
+    	contentInput: algo.contentString,
+    	searchTerms: algo.searchString
     }
 
     ko.applyBindings(viewModel);
