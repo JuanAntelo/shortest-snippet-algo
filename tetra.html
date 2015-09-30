@@ -89,7 +89,14 @@ function five() {
 // generator?
 
 Function.prototype.memoize = function(){
-	return this;
+	var self = this;
+	var cache = {};
+	return function(param){
+		if(param in cache)
+			return cache[arg];
+		else
+			return cache[arg] = self(arg);
+	}
 }
 
 var isEven = (function(num){
