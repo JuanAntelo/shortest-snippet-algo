@@ -14,6 +14,3 @@ As determined by my algorithm, the shortest snippet in this case is - bridge is 
 External libraries used - KnockoutJS / jQUery / Lodash
 
 The focus of this is solving the algorithm itself rather than any UI aesthetics. 
-
-See it at work here,
-http://htmlpreview.github.io/?https://github.com/JuanAntelo/shortest-snippet-algo/blob/master/shortestSnippet.html
